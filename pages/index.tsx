@@ -1,26 +1,95 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import { useRef } from "react";
+import Head from "next/head";
+import styles from "styles/Home.module.css";
+import MaterialTable from "material-table";
+
+import axios from "axios";
 
 export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Playground</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+	const tableRef = useRef<MaterialTable<object>>();
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome candidates
-        </h1>
+	return (
+		<div className={styles.container}>
+			<Head>
+				<title>Playground</title>
+				<link rel="icon" href="/favicon.ico" />
+				<link
+					rel="stylesheet"
+					href="https://fonts.googleapis.com/icon?family=Material+Icons"
+				/>
+			</Head>
 
-        <p className={styles.description}>
-          This is a playground project for Tomorrow's Education hiring process. you can fork this repository and continue with your assigment. If you need to do any backend stuff to complete your task check <a href="/api/hello">API example</a> for references to do the backend work in this repository
-        </p>
-      </main>
+			<main className={styles.main}>
+				<div style={{ width: "100%" }}>
+					<MaterialTable
+						title="Refresh Data Preview"
+						tableRef={tableRef}
+						options={{
+							draggable: false,
+							actionsColumnIndex: -1,
+						}}
+						columns={[
+							{
+								title: "#",
+								field: "tableData",
+								render: (rowData) => rowData.tableData.id + 1,
+							},
+							{ title: "Name", field: "name" },
+						]}
+						data={(query) =>
+							new Promise((resolve, reject) => {
+								let url = "http://localhost:3000/api/challenge";
+								url += `?search=${query.search}&per_page=${
+									query.pageSize
+								}&page=${query.page + 1}`;
+								axios
+									.get(url)
+									.then(function (response: any) {
+										// handle success
+										const data = response.data;
+										console.log(data);
+										resolve({
+											data: data.data,
+											page: data.page - 1,
+											totalCount: data.total,
+										});
+									})
+									.catch(function (error: any) {
+										// handle error
+										console.log(error);
+									})
+									.then(function () {
+										// always executed
+									});
+							})
+						}
+						actions={[
+							{
+								icon: "refresh",
+								tooltip: "Refresh Data",
+								isFreeAction: true,
+								onClick: () =>
+									tableRef.current && (tableRef.current as any).onQueryChange(),
+							},
+							{
+								icon: "save",
+								tooltip: "Save User",
+								onClick: (event, rowData:any) =>
+									alert("You saved " + rowData.name),
+							},
+							(rowData) => ({
+								icon: "delete",
+								tooltip: "Delete User",
+								field: "name",
+								onClick: (event, rowData: any) =>
+									confirm("You want to delete " + rowData.name),
+							}),
+						]}
+					/>
+				</div>
+			</main>
 
-      <footer className={styles.footer}>
-      </footer>
-    </div>
-  )
+			<footer className={styles.footer}></footer>
+		</div>
+	);
 }
