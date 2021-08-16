@@ -25,8 +25,6 @@ const postUpdateReviewer = async (req, res) => {
 	if (challenge.grade === null) {
 		body.grade = 0;
 	}
-	challenge.update(body, {
-		where: { id: query.id },
-	});
+	challenge.update(body);
 	return { message: "success" };
 };
