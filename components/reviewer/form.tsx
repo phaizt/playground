@@ -12,22 +12,26 @@ interface PropsType {
 	challengeId: string;
 	reviewerId: string;
 	students: StudentType[];
+	afterSubmit: () => void;
 }
 
-const submitHandler = (
-	values: Values
-	// { setSubmitting }: FormikHelpers<Values>
-) => {
-	// const data = JSON.stringify(values, null, 2);
-	axios
-		.put(`/reviewer/${values.id}`, values)
-		.then(function (response) {})
-		.catch(function (error) {
-			console.log(error);
-		});
-};
-
 const App: NextPage<PropsType> = (props) => {
+	const submitHandler = (
+		values: Values,
+		{ setSubmitting }: FormikHelpers<Values>
+	) => {
+		setSubmitting(true);
+		axios
+			.put(`/reviewer/${values.id}`, values)
+			.then(function (response) {
+				props.afterSubmit();
+			})
+			.catch(function (error) {
+				console.log(error);
+			});
+		setSubmitting(false);
+	};
+
 	let options = props.students.map((student) => (
 		<option value={student.id} key={student.id}>
 			{student.name}
@@ -44,7 +48,12 @@ const App: NextPage<PropsType> = (props) => {
 			>
 				<Form className="form-horizontal" id={props.formId}>
 					<label htmlFor="firstName">Reviewer</label>
-					<Field as="select" name="reviewerId" className="form-control" required="">
+					<Field
+						as="select"
+						name="reviewerId"
+						className="form-control"
+						required=""
+					>
 						{options}
 					</Field>
 				</Form>

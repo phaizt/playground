@@ -1,6 +1,7 @@
 import { NextPage } from "next";
 import axios from "helpers/axios";
 import { Formik, Field, Form, FormikHelpers } from "formik";
+import { toast } from "react-toastify";
 
 interface Values {
 	id: string;
@@ -10,22 +11,28 @@ interface PropsType {
 	formId: string;
 	challengeId: string;
 	gradeValue: number;
+	afterSubmit: () => void;
 }
 
-const submitHandler = (
-	values: Values
-	// { setSubmitting }: FormikHelpers<Values>
-) => {
-	// const data = JSON.stringify(values, null, 2);
-	axios
-		.put(`/challenge/${values.id}`, values)
-		.then(function (response) {})
-		.catch(function (error) {
-			console.log(error);
-		});
-};
-
 const App: NextPage<PropsType> = (props) => {
+	const submitHandler = (
+		values: Values,
+		{ setSubmitting }: FormikHelpers<Values>
+	) => {
+		setSubmitting(true);
+
+		axios
+			.put(`/challenge/${values.id}`, values)
+			.then(function (response) {
+				toast.success("Update Success");
+				props.afterSubmit();
+			})
+			.catch(function (error) {
+				toast.error("Update Failed");
+				console.log(error);
+			});
+		setSubmitting(false);
+	};
 	return (
 		<>
 			<Formik

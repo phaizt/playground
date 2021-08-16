@@ -67,6 +67,7 @@ const Homepage: NextPage<PropsType> = (props) => {
 				formId={formId}
 				challengeId={challengeId}
 				gradeValue={gradeValue}
+				afterSubmit={closeModalHandler}
 			/>
 		);
 	} else if (formId === formType.REVIEWER) {
@@ -76,6 +77,7 @@ const Homepage: NextPage<PropsType> = (props) => {
 				formId={formId}
 				challengeId={challengeId}
 				reviewerId={reviewerId}
+				afterSubmit={closeModalHandler}
 			/>
 		);
 	}
