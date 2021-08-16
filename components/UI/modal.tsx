@@ -4,6 +4,7 @@ import { Button, Modal } from "react-bootstrap";
 interface PropType {
 	show: boolean;
 	title: string;
+	formId: string;
 	handleClose: () => void;
 	body: JSX.Element;
 }
@@ -20,7 +21,7 @@ const ModalUi: React.FC<PropType> = (props) => {
 					<Button variant="secondary" onClick={props.handleClose}>
 						Close
 					</Button>
-					<Button variant="primary" onClick={props.handleClose}>
+					<Button type="submit" form={props.formId} variant="primary">
 						Save Changes
 					</Button>
 				</Modal.Footer>

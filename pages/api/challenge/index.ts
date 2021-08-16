@@ -5,6 +5,28 @@ import StudentModel from "models/student";
 import ChallengeModel from "models/challenge";
 
 export default async (req, res) => {
+	const { method } = req;
+	let response: object;
+	let status: number;
+	switch (method) {
+		case "GET":
+			response = await getChallenge(req, res);
+			status = 200;
+			break;
+		default:
+			response = { message: `Method ${method} Not Allowed` };
+			status = 405;
+			break;
+	}
+	res.status(200).json(response);
+};
+
+const postChallenge = async (req, res) => {
+	console.log(req.body);
+	return { message: "success" };
+};
+
+const getChallenge = async (req, res) => {
 	await sequelize
 		.authenticate()
 		.then(() => {
@@ -65,6 +87,5 @@ export default async (req, res) => {
 		page: page,
 		data: challenge["rows"],
 	};
-
-	res.status(200).json(response);
+	return response;
 };
