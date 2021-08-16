@@ -1,12 +1,25 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Head from "next/head";
 import styles from "styles/Home.module.css";
 import MaterialTable from "material-table";
+import useGrade from "helpers/useGrade";
+import Modal from "components/UI/modal";
 
 import axios from "axios";
 
 export default function Home() {
+	const [showModal, setShowModal] = useState<boolean>(false);
+	const [modalTitle, setModalTitle] = useState<string>();
 	const tableRef = useRef<MaterialTable<object>>();
+
+	const openModalHandler = (title:string) => {
+		setModalTitle(title);
+		setShowModal(true);
+	};
+
+	const closeModalHandler = () => {
+		setShowModal(false);
+	};
 
 	return (
 		<div className={styles.container}>
@@ -18,7 +31,7 @@ export default function Home() {
 					href="https://fonts.googleapis.com/icon?family=Material+Icons"
 				/>
 			</Head>
-
+			<Modal show={showModal} title={modalTitle} handleClose={closeModalHandler} body={<h1>asda</h1>}/>
 			<main className={styles.main}>
 				<div style={{ width: "100%" }}>
 					<MaterialTable
@@ -29,12 +42,26 @@ export default function Home() {
 							actionsColumnIndex: -1,
 						}}
 						columns={[
+							{ title: "Id", field: "id" },
+							{ title: "Challenge", field: "name" },
 							{
-								title: "#",
-								field: "tableData",
-								render: (rowData) => rowData.tableData.id + 1,
+								title: "Student",
+								field: "student",
+								render: (rowData) => rowData.student.name,
 							},
-							{ title: "Name", field: "name" },
+							{ title: "GDrive", field: "googleDriveFolder" },
+							{ title: "Grade", field: "grade" },
+							{
+								title: "Status",
+								field: "grade",
+								render: (rowData) => useGrade(rowData.grade),
+							},
+
+							{
+								title: "Reviewer",
+								field: "reviewer",
+								render: (rowData) => rowData.reviewer?.name,
+							},
 						]}
 						data={(query) =>
 							new Promise((resolve, reject) => {
@@ -47,7 +74,6 @@ export default function Home() {
 									.then(function (response: any) {
 										// handle success
 										const data = response.data;
-										console.log(data);
 										resolve({
 											data: data.data,
 											page: data.page - 1,
@@ -72,17 +98,15 @@ export default function Home() {
 									tableRef.current && (tableRef.current as any).onQueryChange(),
 							},
 							{
-								icon: "save",
-								tooltip: "Save User",
-								onClick: (event, rowData:any) =>
-									alert("You saved " + rowData.name),
+								icon: "manage_accounts",
+								tooltip: "Set Reviewer",
+								onClick: (event, rowData: any) => openModalHandler("Change Reviewer"),
 							},
 							(rowData) => ({
-								icon: "delete",
-								tooltip: "Delete User",
+								icon: "grade",
+								tooltip: "Grade Challenge",
 								field: "name",
-								onClick: (event, rowData: any) =>
-									confirm("You want to delete " + rowData.name),
+								onClick: (event, rowData: any) => openModalHandler("Grade Challenge"),
 							}),
 						]}
 					/>
