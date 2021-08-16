@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { NextPage } from "next";
 import Head from "next/head";
 import styles from "styles/Home.module.css";
 import MaterialTable from "material-table";
@@ -6,6 +7,8 @@ import MaterialTable from "material-table";
 import useGrade from "helpers/useGrade";
 import Modal from "components/UI/modal";
 import GradeForm from "components/grade/form";
+import ReviewerForm from "components/reviewer/form";
+import { Student as StudentType } from "interfaces/student";
 
 import axios from "helpers/axios";
 
@@ -14,25 +17,41 @@ enum formType {
 	REVIEWER = "reviewer",
 }
 
-export default function Home() {
+interface PropsType {
+	students: StudentType[];
+}
+
+export const getStaticProps = async () => {
+	const students = await axios.get("/reviewer/");
+	return {
+		props: {
+			students: students.data.data,
+		},
+	};
+};
+
+const Homepage: NextPage<PropsType> = (props) => {
 	const [showModal, setShowModal] = useState<boolean>(false);
 	const [modalTitle, setModalTitle] = useState<string>();
 	const [formId, setFormId] = useState<string>();
 	const [challengeId, setChallengeId] = useState<string>();
 	const [gradeValue, setGradeValue] = useState<number>();
+	const [reviewerId, setReviewerId] = useState<string>();
 	const tableRef = useRef<MaterialTable<object>>();
 	let form;
 
 	const openModalGradeHandler = (id: string, grade: number) => {
-		setGradeValue(grade);
 		setFormId(formType.GRADE);
+		setGradeValue(grade);
+		setChallengeId(id);
 		setModalTitle("Grade Form");
 		setShowModal(true);
-		setChallengeId(id);
 	};
 
-	const openModalReviewerHandler = () => {
+	const openModalReviewerHandler = (id: string, reviewer: string) => {
 		setFormId(formType.REVIEWER);
+		setReviewerId(reviewer);
+		setChallengeId(id);
 		setModalTitle("Reviewer Form");
 		setShowModal(true);
 	};
@@ -51,7 +70,14 @@ export default function Home() {
 			/>
 		);
 	} else if (formId === formType.REVIEWER) {
-		form = <h1>lorem</h1>;
+		form = (
+			<ReviewerForm
+				students={props.students}
+				formId={formId}
+				challengeId={challengeId}
+				reviewerId={reviewerId}
+			/>
+		);
 	}
 
 	return (
@@ -140,7 +166,11 @@ export default function Home() {
 							{
 								icon: "manage_accounts",
 								tooltip: "Set Reviewer",
-								onClick: (event, rowData: any) => openModalReviewerHandler(),
+								onClick: (event, rowData: any) =>
+									openModalReviewerHandler(
+										rowData.id.toString(),
+										rowData.reviewerId.toString()
+									),
 							},
 							(rowData) => ({
 								icon: "grade",
@@ -157,4 +187,6 @@ export default function Home() {
 			<footer className={styles.footer}></footer>
 		</div>
 	);
-}
+};
+
+export default Homepage;

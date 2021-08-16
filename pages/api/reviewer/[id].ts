@@ -8,7 +8,7 @@ export default async (req, res) => {
 	let status: number;
 	switch (method) {
 		case "PUT":
-			response = await postUpdateChallenge(req, res);
+			response = await postUpdateReviewer(req, res);
 			status = 200;
 			break;
 		default:
@@ -19,7 +19,7 @@ export default async (req, res) => {
 	res.status(200).json(response);
 };
 
-const postUpdateChallenge = async (req, res) => {
+const postUpdateReviewer = async (req, res) => {
 	const { body, query } = req;
 	const challenge = await ChallengeModel.update(body, {
 		where: { id: query.id },

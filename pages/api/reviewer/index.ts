@@ -1,14 +1,13 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { Op } from "sequelize";
-import ChallengeModel from "models/challenge";
+import StudentModel from "models/student";
 
 export default async (req, res) => {
 	const { method } = req;
 	let response: object;
 	let status: number;
 	switch (method) {
-		case "PUT":
-			response = await postUpdateChallenge(req, res);
+		case "GET":
+			response = await getStudents(req, res);
 			status = 200;
 			break;
 		default:
@@ -19,10 +18,17 @@ export default async (req, res) => {
 	res.status(200).json(response);
 };
 
-const postUpdateChallenge = async (req, res) => {
-	const { body, query } = req;
-	const challenge = await ChallengeModel.update(body, {
-		where: { id: query.id },
+const getStudents = async (req, res) => {
+
+	const attributes = ["id", "email", "name"];
+
+	const students = await StudentModel.findAndCountAll({
+		attributes: attributes,
 	});
-	return { message: "success" };
+
+	const response = {
+		total: students["count"],
+		data: students["rows"],
+	};
+	return response;
 };

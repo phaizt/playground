@@ -1,15 +1,17 @@
 import { NextPage } from "next";
 import axios from "helpers/axios";
 import { Formik, Field, Form, FormikHelpers } from "formik";
+import { Student as StudentType } from "interfaces/student";
 
 interface Values {
 	id: string;
-	grade: number;
+	reviewerId: string;
 }
 interface PropsType {
 	formId: string;
 	challengeId: string;
-	gradeValue: number;
+	reviewerId: string;
+	students: StudentType[];
 }
 
 const submitHandler = (
@@ -18,7 +20,7 @@ const submitHandler = (
 ) => {
 	// const data = JSON.stringify(values, null, 2);
 	axios
-		.put(`/challenge/${values.id}`, values)
+		.put(`/reviewer/${values.id}`, values)
 		.then(function (response) {})
 		.catch(function (error) {
 			console.log(error);
@@ -26,23 +28,24 @@ const submitHandler = (
 };
 
 const App: NextPage<PropsType> = (props) => {
+	let options = props.students.map((student) => (
+		<option value={student.id} key={student.id}>
+			{student.name}
+		</option>
+	));
 	return (
 		<>
 			<Formik
 				initialValues={{
-					grade: props.gradeValue,
+					reviewerId: props.reviewerId,
 					id: props.challengeId,
 				}}
 				onSubmit={submitHandler}
 			>
 				<Form className="form-horizontal" id={props.formId}>
-					<label htmlFor="firstName">Grade</label>
-					<Field as="select" name="grade" className="form-control" required="">
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-						<option value="5">5</option>
+					<label htmlFor="firstName">Reviewer</label>
+					<Field as="select" name="reviewerId" className="form-control" required="">
+						{options}
 					</Field>
 				</Form>
 			</Formik>

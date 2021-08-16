@@ -21,11 +21,6 @@ export default async (req, res) => {
 	res.status(200).json(response);
 };
 
-const postChallenge = async (req, res) => {
-	console.log(req.body);
-	return { message: "success" };
-};
-
 const getChallenge = async (req, res) => {
 	await sequelize
 		.authenticate()
