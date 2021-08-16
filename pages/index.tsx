@@ -8,7 +8,7 @@ import useGrade from "helpers/useGrade";
 import Modal from "components/UI/modal";
 import GradeForm from "components/grade/form";
 import ReviewerForm from "components/reviewer/form";
-import { Student as StudentType } from "interfaces/student";
+import { ReviewerID } from "interfaces/reviewer";
 
 import axios from "helpers/axios";
 
@@ -17,26 +17,13 @@ enum formType {
 	REVIEWER = "reviewer",
 }
 
-interface PropsType {
-	students: StudentType[];
-}
-
-export const getStaticProps = async () => {
-	const students = await axios.get("/reviewer/");
-	return {
-		props: {
-			students: students.data.data,
-		},
-	};
-};
-
-const Homepage: NextPage<PropsType> = (props) => {
+const Homepage: NextPage<{}> = (props) => {
 	const [showModal, setShowModal] = useState<boolean>(false);
 	const [modalTitle, setModalTitle] = useState<string>();
 	const [formId, setFormId] = useState<string>();
 	const [challengeId, setChallengeId] = useState<string>();
 	const [gradeValue, setGradeValue] = useState<number>();
-	const [reviewerId, setReviewerId] = useState<string>();
+	const [reviewerId, setReviewerId] = useState<ReviewerID>();
 	const tableRef = useRef<MaterialTable<object>>();
 	let form;
 
@@ -48,15 +35,23 @@ const Homepage: NextPage<PropsType> = (props) => {
 		setShowModal(true);
 	};
 
-	const openModalReviewerHandler = (id: string, reviewer: string) => {
+	const openModalReviewerHandler = (
+		id: string,
+		reviewer: string,
+		name: string
+	) => {
 		setFormId(formType.REVIEWER);
-		setReviewerId(reviewer);
+		setReviewerId({ value: reviewer ?? "", label: name ?? "" });
 		setChallengeId(id);
 		setModalTitle("Reviewer Form");
 		setShowModal(true);
 	};
 
 	const closeModalHandler = () => {
+		setShowModal(false);
+	};
+
+	const closeModalRefreshHandler = () => {
 		tableRef.current && (tableRef.current as any).onQueryChange();
 		setShowModal(false);
 	};
@@ -67,17 +62,16 @@ const Homepage: NextPage<PropsType> = (props) => {
 				formId={formId}
 				challengeId={challengeId}
 				gradeValue={gradeValue}
-				afterSubmit={closeModalHandler}
+				afterSubmit={closeModalRefreshHandler}
 			/>
 		);
 	} else if (formId === formType.REVIEWER) {
 		form = (
 			<ReviewerForm
-				students={props.students}
 				formId={formId}
 				challengeId={challengeId}
 				reviewerId={reviewerId}
-				afterSubmit={closeModalHandler}
+				afterSubmit={closeModalRefreshHandler}
 			/>
 		);
 	}
@@ -168,11 +162,13 @@ const Homepage: NextPage<PropsType> = (props) => {
 							{
 								icon: "manage_accounts",
 								tooltip: "Set Reviewer",
-								onClick: (event, rowData: any) =>
-									openModalReviewerHandler(
+								onClick: (event, rowData: any) => {
+									return openModalReviewerHandler(
 										rowData.id.toString(),
-										rowData.reviewerId.toString()
-									),
+										rowData.reviewerId && rowData.reviewerId.toString(),
+										rowData.reviewer && rowData.reviewer.name
+									);
+								},
 							},
 							(rowData) => ({
 								icon: "grade",

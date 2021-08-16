@@ -1,4 +1,4 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
+import { Op } from "sequelize";
 import StudentModel from "models/student";
 
 export default async (req, res) => {
@@ -19,16 +19,23 @@ export default async (req, res) => {
 };
 
 const getStudents = async (req, res) => {
-
-	const attributes = ["id", "email", "name"];
-
-	const students = await StudentModel.findAndCountAll({
-		attributes: attributes,
+	const search: string = req.query.search ?? "";
+	
+	const students = await StudentModel.findAll({
+		limit: 5,
+		where: {
+			name: {
+				[Op.like]: `${search}%`,
+			},
+		},
+		attributes: [
+			["id", "value"],
+			["name", "label"],
+		],
 	});
 
 	const response = {
-		total: students["count"],
-		data: students["rows"],
+		students,
 	};
 	return response;
 };
