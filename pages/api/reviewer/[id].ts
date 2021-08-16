@@ -21,8 +21,11 @@ export default async (req, res) => {
 
 const postUpdateReviewer = async (req, res) => {
 	const { body, query } = req;
-	console.log(body);
-	const challenge = await ChallengeModel.update(body, {
+	const challenge = await ChallengeModel.findByPk(query.id);
+	if (challenge.grade === null) {
+		body.grade = 0;
+	}
+	challenge.update(body, {
 		where: { id: query.id },
 	});
 	return { message: "success" };
